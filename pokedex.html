@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Pokédex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pokedex.css">
+</head>
+<body>
+
+    <div class="pokedex-device">
+        <!-- Hinge Detail -->
+        <div class="hinge">
+            <div class="hinge-joint"></div>
+            <div class="hinge-joint"></div>
+        </div>
+
+        <!-- Top Lights -->
+        <div class="top-lights">
+            <div class="big-light"></div>
+            <div class="small-lights">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+            </div>
+        </div>
+
+        <!-- Screen Area -->
+        <div class="screen-bezel">
+            <div class="screen-container" id="screen">
+                
+                <div id="loader" class="loading-text" style="display:none;">LOADING...</div>
+
+                <!-- View 1: Info & Sprite -->
+                <div class="view-info active" id="view-info">
+                    <div class="sprite-area">
+                        <img id="poke-img" src="" alt="Pokemon">
+                    </div>
+                    <div class="data-row">
+                        <span id="poke-id">#---</span>
+                        <span id="poke-name">-------</span>
+                    </div>
+                    <div class="data-row" style="border:none; margin-top:0; font-size: 0.9rem;">
+                        <span>TYPE:</span>
+                        <span id="poke-types">---</span>
+                    </div>
+                    <div class="desc-text" id="poke-desc">
+                        Booting up system...
+                    </div>
+                </div>
+
+                <!-- View 2: Stats -->
+                <div class="view-stats" id="view-stats">
+                    <div class="stats-header">
+                        <span id="stat-height">HT: -.--m</span>
+                        <span id="stat-weight">WT: -.--kg</span>
+                    </div>
+                    
+                    <!-- New Abilities Section -->
+                    <div class="abilities-section">
+                        <span class="abilities-label">ABILITIES:</span>
+                        <div id="poke-abilities" class="abilities-list">---</div>
+                    </div>
+
+                    <div id="stats-bars">
+                        <!-- Bars injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+            <!-- Small red dots under screen -->
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <div class="dot red" style="background:#c00; width:8px; height:8px;"></div>
+                <div class="dot red" style="background:#c00; width:8px; height:8px;"></div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="controls-area">
+            
+            <!-- Search Bar -->
+            <div class="input-bar">
+                <select class="type-filter" id="type-filter">
+                    <option value="">ALL TYPES</option>
+                    <option value="grass">GRASS</option>
+                    <option value="fire">FIRE</option>
+                    <option value="water">WATER</option>
+                    <option value="bug">BUG</option>
+                    <option value="normal">NORMAL</option>
+                    <option value="poison">POISON</option>
+                    <option value="electric">ELEC</option>
+                </select>
+                <input type="text" class="search-input" id="search-input" placeholder="name/id...">
+                <button class="go-btn" id="btn-search">GO</button>
+            </div>
+
+            <!-- D-Pad and Buttons -->
+            <div class="bottom-controls">
+                <div class="d-pad">
+                    <div class="d-pad-h"></div>
+                    <div class="d-pad-v"></div>
+                    <!-- Invisible click zones for logic -->
+                    <div style="position:absolute; top:0; left:33px; width:34px; height:33px;" id="btn-up"></div>
+                    <div style="position:absolute; bottom:0; left:33px; width:34px; height:33px;" id="btn-down"></div>
+                    <div style="position:absolute; top:33px; left:0; width:33px; height:34px;" id="btn-prev"></div>
+                    <div style="position:absolute; top:33px; right:0; width:33px; height:34px;" id="btn-next"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <div class="round-btn-container">
+                        <div class="round-btn blue-mode" id="btn-stats">STATS</div>
+                        <div class="btn-label">X (Stats)</div>
+                    </div>
+                    <div class="round-btn-container">
+                        <div class="round-btn blue-mode" id="btn-info">INFO</div>
+                        <div class="btn-label">Z (Info)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="pokedex.js"></script>
+</body>
+</html>

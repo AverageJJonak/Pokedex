@@ -1,0 +1,430 @@
+:root {
+    --pokedex-red: #dd0b2d;
+    --pokedex-dark-red: #8b0000;
+    
+    /* UPDATED: Blue Screen Theme */
+    --screen-bg: #a8d4ff;       /* Light Blue Background */
+    --screen-text: #003055;     /* Dark Blue Text */
+    --screen-border: #4a90e2;   /* Border color for elements */
+    
+    --plastic-highlight: rgba(255,255,255,0.3);
+    --plastic-shadow: rgba(0,0,0,0.2);
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background-color: #202020;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'VT323', monospace;
+}
+
+/* --- The Device Case --- */
+.pokedex-device {
+    width: 400px;
+    height: 650px;
+    background-color: var(--pokedex-red);
+    border-radius: 15px 15px 15px 15px;
+    box-shadow: 
+        inset 5px 5px 15px var(--plastic-highlight),
+        inset -5px -5px 15px rgba(0,0,0,0.3),
+        10px 10px 20px rgba(0,0,0,0.5);
+    position: relative;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The Hinge (Left Side) */
+.hinge {
+    position: absolute;
+    left: 0;
+    top: 40px;
+    bottom: 40px;
+    width: 30px;
+    background: linear-gradient(to right, #8b0000, #dd0b2d, #8b0000);
+    border-right: 2px solid #600000;
+    border-radius: 5px 0 0 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.hinge-joint {
+    height: 20px;
+    background: #600000;
+    margin: 0 2px;
+    border-radius: 2px;
+}
+
+/* Top Sensor Lights */
+.top-lights {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-left: 20px;
+}
+
+.big-light {
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle at 30% 30%, #4af, #0055aa);
+    border: 4px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.small-lights {
+    display: flex;
+    gap: 5px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.3);
+}
+.dot.red { background: #ff0000; }
+.dot.yellow { background: #ffff00; }
+.dot.green { background: #00ff00; }
+
+/* --- The Screen Area --- */
+.screen-bezel {
+    background-color: #dedede;
+    border-radius: 15px 15px 30px 15px;
+    padding: 20px;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+    margin-left: 20px; /* Space for hinge */
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.screen-container {
+    background-color: var(--screen-bg);
+    border: 4px solid #555;
+    border-radius: 5px;
+    height: 220px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
+    padding: 10px;
+    color: var(--screen-text);
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    image-rendering: pixelated;
+}
+
+/* Scanline effect */
+.screen-container::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Screen Content Layouts */
+.view-info, .view-stats {
+    display: none; /* Hidden by default, toggled via JS */
+    height: 100%;
+    flex-direction: column;
+}
+
+.view-info.active, .view-stats.active {
+    display: flex;
+}
+
+/* Info View Specifics */
+.sprite-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sprite-area img {
+    height: 100px;
+    filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.2));
+}
+
+.data-row {
+    border-top: 2px dashed var(--screen-border);
+    padding-top: 5px;
+    margin-top: 5px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+/* UPDATED: Scrollable Description */
+.desc-text {
+    font-size: 0.9rem;
+    line-height: 1.1rem;
+    margin-top: 5px;
+    height: 60px; /* Fixed height */
+    overflow-y: auto; /* Enable vertical scroll */
+    padding-right: 5px;
+    white-space: pre-wrap; /* Preserve wrapping */
+}
+
+/* Custom Scrollbar for Description */
+.desc-text::-webkit-scrollbar {
+    width: 6px;
+}
+.desc-text::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+.desc-text::-webkit-scrollbar-thumb {
+    background: var(--screen-border);
+    border-radius: 3px;
+}
+
+/* Stats View Specifics */
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px dashed var(--screen-border);
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+}
+
+/* UPDATED: Abilities Section */
+.abilities-section {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    border-bottom: 2px dashed var(--screen-border);
+    padding-bottom: 5px;
+}
+.abilities-label {
+    font-weight: bold;
+    display: block;
+}
+.abilities-list {
+    text-transform: uppercase;
+    margin-left: 5px;
+}
+
+.stat-bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
+
+.stat-label {
+    width: 40px;
+    font-weight: bold;
+}
+
+.stat-num {
+    width: 30px;
+    text-align: right;
+    margin-right: 5px;
+}
+
+.bar-container {
+    flex-grow: 1;
+    height: 8px;
+    border: 1px solid var(--screen-border);
+    padding: 1px;
+    background: rgba(255,255,255,0.3);
+}
+
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* UPDATED: Stat Bar Colors */
+.bar-fill.hp { background-color: #ff5959; }  /* Red */
+.bar-fill.atk { background-color: #f5ac78; } /* Orange */
+.bar-fill.def { background-color: #fae078; } /* Yellow */
+.bar-fill.spa { background-color: #9db7f5; } /* Blue */
+.bar-fill.spd { background-color: #a7db8d; } /* Green */
+.bar-fill.spe { background-color: #fa92b2; } /* Pink */
+
+/* --- Control Panel --- */
+.controls-area {
+    margin-left: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Black Input Bar */
+.input-bar {
+    background-color: #222;
+    border-radius: 5px;
+    padding: 8px;
+    display: flex;
+    gap: 5px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    align-items: center;
+}
+
+.type-filter {
+    background: transparent;
+    color: #0f0;
+    border: none;
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+}
+
+.search-input {
+    background: #111;
+    border: 1px solid #444;
+    color: #888;
+    padding: 5px;
+    flex-grow: 1;
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+}
+
+.go-btn {
+    background-color: #4af;
+    border: none;
+    color: white;
+    font-family: 'VT323', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 2px;
+}
+
+/* Bottom Controls Grid */
+.bottom-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 10px;
+    margin-top: 20px;
+}
+
+/* D-Pad */
+.d-pad {
+    width: 100px;
+    height: 100px;
+    position: relative;
+}
+
+.d-pad div {
+    background-color: #222;
+    position: absolute;
+    border-radius: 3px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
+.d-pad div:active {
+    transform: scale(0.95);
+}
+
+.d-pad-h {
+    width: 100%;
+    height: 34px;
+    top: 33px;
+    left: 0;
+}
+
+.d-pad-v {
+    height: 100%;
+    width: 34px;
+    left: 33px;
+    top: 0;
+}
+
+/* Center circle of D-pad */
+.d-pad::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    top: 40px;
+    left: 40px;
+    pointer-events: none;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.round-btn-container {
+    text-align: center;
+}
+
+.round-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #222;
+    border: 2px solid #444;
+    color: #555;
+    font-size: 0.7rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    margin-bottom: 5px;
+}
+
+.round-btn.blue-mode {
+    background-color: #2a75bb;
+    border-color: #1a5c9e;
+    color: rgba(255,255,255,0.8);
+}
+
+.round-btn:active {
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+    transform: translateY(2px);
+}
+
+.btn-label {
+    font-family: 'Press Start 2P', cursive; /* Pixel font */
+    font-size: 0.5rem;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Loading State */
+.loading-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: blink 1s infinite;
+    z-index: 10;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
