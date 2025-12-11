@@ -1,3 +1,5 @@
+// pokedex.js
+
 // --- DOM Elements ---
 const dom = {
     img: document.getElementById('poke-img'),
@@ -9,6 +11,8 @@ const dom = {
     weight: document.getElementById('stat-weight'),
     abilities: document.getElementById('poke-abilities'),
     statsBars: document.getElementById('stats-bars'),
+    baseStatTotal: document.getElementById('base-stat-total'),
+    evYield: document.getElementById('ev-yield'),
     viewInfo: document.getElementById('view-info'),
     viewStats: document.getElementById('view-stats'),
     loader: document.getElementById('loader'),
@@ -23,19 +27,50 @@ const dom = {
     powerOffScreen: document.getElementById('power-off-screen'),
     screenBezel: document.getElementById('screen-bezel'),
     megaBanner: document.getElementById('mega-banner'),
+    shinyIndicator: document.getElementById('shiny-indicator'),
+    generationBadge: document.getElementById('generation-badge'),
+    spriteEffects: document.getElementById('sprite-effects'),
+    bootSequence: document.getElementById('boot-sequence'),
     device: document.querySelector('.pokedex-device')
 };
 
-// --- Audio Elements ---
-const sounds = {
-    button: new Audio(),
-    move: new Audio(),
-    select: new Audio(),
-    error: new Audio(),
-    cry: new Audio()
+// --- State ---
+let currentId = 1;
+let currentView = 'info';
+let isPoweredOn = false;
+let isMegaMode = false;
+let isShiny = false;
+
+// Mega Evolution / Gigantamax forms database
+const megaForms = {
+    3: 'venusaur-mega', 6: 'charizard-mega-x', 9: 'blastoise-mega',
+    15: 'beedrill-mega', 18: 'pidgeot-mega', 65: 'alakazam-mega',
+    80: 'slowbro-mega', 94: 'gengar-mega', 115: 'kangaskhan-mega',
+    127: 'pinsir-mega', 130: 'gyarados-mega', 142: 'aerodactyl-mega',
+    150: 'mewtwo-mega-x', 181: 'ampharos-mega', 212: 'scizor-mega',
+    214: 'heracross-mega', 229: 'houndoom-mega', 248: 'tyranitar-mega',
+    254: 'sceptile-mega', 257: 'blaziken-mega', 260: 'swampert-mega',
+    282: 'gardevoir-mega', 302: 'sableye-mega', 303: 'mawile-mega',
+    306: 'aggron-mega', 308: 'medicham-mega', 310: 'manectric-mega',
+    319: 'sharpedo-mega', 323: 'camerupt-mega', 334: 'altaria-mega',
+    354: 'banette-mega', 359: 'absol-mega', 362: 'glalie-mega',
+    373: 'salamence-mega', 376: 'metagross-mega', 380: 'latias-mega',
+    381: 'latios-mega', 384: 'rayquaza-mega', 428: 'lopunny-mega',
+    445: 'garchomp-mega', 448: 'lucario-mega', 460: 'abomasnow-mega',
+    475: 'gallade-mega', 531: 'audino-mega', 719: 'diancie-mega',
+    12: 'butterfree-gmax', 25: 'pikachu-gmax', 52: 'meowth-gmax',
+    68: 'machamp-gmax', 99: 'kingler-gmax', 131: 'lapras-gmax',
+    133: 'eevee-gmax', 143: 'snorlax-gmax', 569: 'garbodor-gmax',
+    809: 'melmetal-gmax', 812: 'rillaboom-gmax', 815: 'cinderace-gmax',
+    818: 'inteleon-gmax', 823: 'corviknight-gmax', 826: 'orbeetle-gmax',
+    834: 'drednaw-gmax', 839: 'coalossal-gmax', 841: 'flapple-gmax',
+    842: 'appletun-gmax', 844: 'sandaconda-gmax', 849: 'toxtricity-gmax',
+    851: 'centiskorch-gmax', 858: 'hatterene-gmax', 861: 'grimmsnarl-gmax',
+    869: 'alcremie-gmax', 879: 'copperajah-gmax', 884: 'duraludon-gmax',
+    892: 'urshifu-gmax'
 };
 
-// Simple beep sounds using Web Audio API
+// --- Audio Functions ---
 function createBeep(frequency, duration, type = 'sine') {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -56,7 +91,7 @@ function createBeep(frequency, duration, type = 'sine') {
 }
 
 function playSound(soundType) {
-    if (!isPoweredOn) return;
+    if (!isPoweredOn && soundType !== 'powerOn' && soundType !== 'powerOff') return;
     
     switch(soundType) {
         case 'button':
@@ -83,7 +118,6 @@ function playSound(soundType) {
             setTimeout(() => createBeep(400, 0.15), 200);
             break;
         case 'megaActivate':
-            // Epic mega evolution sound
             for(let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     createBeep(400 + (i * 200), 0.1, 'square');
@@ -93,120 +127,56 @@ function playSound(soundType) {
                 createBeep(1500, 0.3, 'sawtooth');
             }, 500);
             break;
+        case 'shiny':
+            createBeep(1200, 0.1);
+            setTimeout(() => createBeep(1400, 0.1), 100);
+            setTimeout(() => createBeep(1600, 0.15), 200);
+            break;
     }
 }
-
-// --- State ---
-let currentId = 1;
-let currentView = 'info';
-let isPoweredOn = false;
-let isMegaMode = false;
-
-// Mega Evolution / Gigantamax forms database
-const megaForms = {
-    // Mega Evolutions
-    3: 'venusaur-mega',
-    6: 'charizard-mega-x', // Can also be charizard-mega-y
-    9: 'blastoise-mega',
-    15: 'beedrill-mega',
-    18: 'pidgeot-mega',
-    65: 'alakazam-mega',
-    80: 'slowbro-mega',
-    94: 'gengar-mega',
-    115: 'kangaskhan-mega',
-    127: 'pinsir-mega',
-    130: 'gyarados-mega',
-    142: 'aerodactyl-mega',
-    150: 'mewtwo-mega-x', // Can also be mewtwo-mega-y
-    181: 'ampharos-mega',
-    212: 'scizor-mega',
-    214: 'heracross-mega',
-    229: 'houndoom-mega',
-    248: 'tyranitar-mega',
-    254: 'sceptile-mega',
-    257: 'blaziken-mega',
-    260: 'swampert-mega',
-    282: 'gardevoir-mega',
-    302: 'sableye-mega',
-    303: 'mawile-mega',
-    306: 'aggron-mega',
-    308: 'medicham-mega',
-    310: 'manectric-mega',
-    319: 'sharpedo-mega',
-    323: 'camerupt-mega',
-    334: 'altaria-mega',
-    354: 'banette-mega',
-    359: 'absol-mega',
-    362: 'glalie-mega',
-    373: 'salamence-mega',
-    376: 'metagross-mega',
-    380: 'latias-mega',
-    381: 'latios-mega',
-    384: 'rayquaza-mega',
-    428: 'lopunny-mega',
-    445: 'garchomp-mega',
-    448: 'lucario-mega',
-    460: 'abomasnow-mega',
-    475: 'gallade-mega',
-    531: 'audino-mega',
-    719: 'diancie-mega',
-    
-    // Gigantamax forms
-    12: 'butterfree-gmax',
-    25: 'pikachu-gmax',
-    52: 'meowth-gmax',
-    68: 'machamp-gmax',
-    94: 'gengar-gmax',
-    99: 'kingler-gmax',
-    131: 'lapras-gmax',
-    133: 'eevee-gmax',
-    143: 'snorlax-gmax',
-    569: 'garbodor-gmax',
-    809: 'melmetal-gmax',
-    812: 'rillaboom-gmax',
-    815: 'cinderace-gmax',
-    818: 'inteleon-gmax',
-    823: 'corviknight-gmax',
-    826: 'orbeetle-gmax',
-    834: 'drednaw-gmax',
-    839: 'coalossal-gmax',
-    841: 'flapple-gmax',
-    842: 'appletun-gmax',
-    844: 'sandaconda-gmax',
-    849: 'toxtricity-gmax',
-    851: 'centiskorch-gmax',
-    858: 'hatterene-gmax',
-    861: 'grimmsnarl-gmax',
-    869: 'alcremie-gmax',
-    879: 'copperajah-gmax',
-    884: 'duraludon-gmax',
-    892: 'urshifu-gmax'
-};
 
 // --- Initialization ---
 window.addEventListener('DOMContentLoaded', () => {
     powerOff();
 });
 
-// Power on/off functions
+// --- Power Functions ---
 function powerOn() {
     if (isPoweredOn) return;
     
     isPoweredOn = true;
-    dom.powerOffScreen.classList.remove('active');
-    dom.screenContainer.classList.remove('powered-off');
-    dom.powerLight.classList.add('pulse');
-    dom.powerLight.classList.remove('off');
-    
     playSound('powerOn');
     
-    setTimeout(() => blinkDot(dom.dotRed), 100);
-    setTimeout(() => blinkDot(dom.dotYellow), 300);
-    setTimeout(() => blinkDot(dom.dotGreen), 500);
+    // Boot sequence
+    const bootMessages = [
+        'SYSTEM BOOT...',
+        'LOADING OS...',
+        'CHECKING DATABASE...',
+        'POKéDEX READY!'
+    ];
     
-    setTimeout(() => {
-        fetchPokemon(1);
-    }, 800);
+    let msgIndex = 0;
+    const bootInterval = setInterval(() => {
+        if (msgIndex < bootMessages.length) {
+            dom.bootSequence.textContent = bootMessages[msgIndex];
+            blinkDot(dom.dotRed);
+            msgIndex++;
+        } else {
+            clearInterval(bootInterval);
+            dom.bootSequence.textContent = '';
+            dom.powerOffScreen.classList.remove('active');
+            dom.screenContainer.classList.remove('powered-off');
+            dom.powerLight.classList.add('pulse');
+            dom.powerLight.classList.remove('off');
+            
+            setTimeout(() => blinkDot(dom.dotGreen), 100);
+            setTimeout(() => blinkDot(dom.dotYellow), 300);
+            
+            setTimeout(() => {
+                fetchPokemon(1);
+            }, 500);
+        }
+    }, 300);
 }
 
 function powerOff() {
@@ -215,13 +185,13 @@ function powerOff() {
     dom.screenContainer.classList.add('powered-off');
     dom.powerLight.classList.remove('pulse');
     dom.powerLight.classList.add('off');
+    dom.bootSequence.textContent = '';
     
     if (currentId !== 0) {
         playSound('powerOff');
     }
     currentId = 0;
     
-    // Turn off mega mode when powering off
     if (isMegaMode) {
         deactivateMegaMode();
     }
@@ -247,14 +217,12 @@ function activateMegaMode() {
     
     playSound('megaActivate');
     
-    // Flash all dots
     setTimeout(() => {
         blinkDot(dom.dotRed);
         blinkDot(dom.dotYellow);
         blinkDot(dom.dotGreen);
     }, 200);
     
-    // Reload current Pokemon with mega form
     if (currentId > 0) {
         setTimeout(() => {
             fetchPokemon(currentId, true);
@@ -321,6 +289,19 @@ document.getElementById('btn-start').addEventListener('click', () => {
     togglePower();
 });
 
+document.getElementById('btn-select').addEventListener('click', () => {
+    if (!isPoweredOn) return;
+    playSound('button');
+    // Toggle shiny
+    isShiny = !isShiny;
+    if (currentId > 0) {
+        if (isShiny) {
+            playSound('shiny');
+        }
+        fetchPokemon(currentId, isMegaMode);
+    }
+});
+
 document.getElementById('btn-search').addEventListener('click', () => {
     if (!isPoweredOn) return;
     playSound('button');
@@ -349,14 +330,12 @@ let konamiCode = [];
 const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
 document.addEventListener('keydown', (e) => {
-    // Konami code tracking
     konamiCode.push(e.key);
     konamiCode = konamiCode.slice(-10);
     
     if(konamiCode.join(',') === konamiSequence.join(',')) {
         if (!isPoweredOn) powerOn();
         
-        // Activate MEGA MODE!
         setTimeout(() => {
             activateMegaMode();
         }, isPoweredOn ? 0 : 1000);
@@ -365,7 +344,6 @@ document.addEventListener('keydown', (e) => {
         return;
     }
     
-    // Regular keyboard controls
     if (!isPoweredOn && e.key.toLowerCase() !== 'enter') return;
     
     switch(e.key.toLowerCase()) {
@@ -388,17 +366,7 @@ document.addEventListener('keydown', (e) => {
         case 'enter':
             document.getElementById('btn-start').click();
             break;
-        case 'm':
-            // Secret key to toggle mega mode manually
-            if (isPoweredOn) {
-                if (isMegaMode) {
-                    deactivateMegaMode();
-                    fetchPokemon(currentId, false);
-                } else {
-                    activateMegaMode();
-                }
-            }
-            break;
+        // Removed the 'm' key case that toggled mega mode
     }
 });
 
@@ -458,7 +426,6 @@ async function fetchPokemon(identifier, useMegaForm = false) {
     dom.screenContainer.classList.add('flicker');
 
     try {
-        // First, get the base Pokemon to find its ID
         let baseRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${identifier}`);
         if(!baseRes.ok) throw new Error('Not found');
         let baseData = await baseRes.json();
@@ -466,17 +433,14 @@ async function fetchPokemon(identifier, useMegaForm = false) {
         let finalIdentifier = identifier;
         currentId = baseData.id;
         
-        // Check if mega form should be used
         if (useMegaForm && megaForms[currentId]) {
             finalIdentifier = megaForms[currentId];
         }
         
-        // Fetch the actual form (could be base or mega)
         const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${finalIdentifier}`);
         if(!res.ok) throw new Error('Form not found');
         const data = await res.json();
 
-        // Fetch species data from the base Pokemon
         const speciesRes = await fetch(baseData.species.url);
         const speciesData = await speciesRes.json();
 
@@ -525,10 +489,20 @@ function updateDisplay(data, speciesData, isMega) {
     }
     dom.name.textContent = displayName;
     
+    // Sprite with shiny support
     dom.img.style.animation = 'none';
     setTimeout(() => {
-        dom.img.src = data.sprites.other['official-artwork'].front_default || 
-                      data.sprites.front_default;
+        if (isShiny) {
+            dom.img.src = data.sprites.other['official-artwork'].front_shiny || 
+                          data.sprites.front_shiny ||
+                          data.sprites.other['official-artwork'].front_default || 
+                          data.sprites.front_default;
+            dom.shinyIndicator.classList.add('active');
+        } else {
+            dom.img.src = data.sprites.other['official-artwork'].front_default || 
+                          data.sprites.front_default;
+            dom.shinyIndicator.classList.remove('active');
+        }
         dom.img.style.animation = '';
     }, 10);
 
@@ -563,6 +537,10 @@ function updateDisplay(data, speciesData, isMega) {
     }
     dom.desc.textContent = description;
 
+    // Generation badge
+    const genNumber = speciesData.generation.url.split('/').filter(Boolean).pop();
+    dom.generationBadge.textContent = `GEN ${genNumber}`;
+
     // --- Stats View ---
     dom.height.textContent = `HT: ${(data.height / 10).toFixed(1)}m`;
     dom.weight.textContent = `WT: ${(data.weight / 10).toFixed(1)}kg`;
@@ -582,9 +560,11 @@ function updateDisplay(data, speciesData, isMega) {
     };
 
     let statsHtml = '';
+    let totalStats = 0;
     data.stats.forEach(s => {
         const info = statMap[s.stat.name] || { label: '---', class: '' };
         const val = s.base_stat;
+        totalStats += val;
         const percent = Math.min((val / 255) * 100, 100);
 
         statsHtml += `
@@ -604,4 +584,14 @@ function updateDisplay(data, speciesData, isMega) {
             bar.style.width = bar.dataset.width + '%';
         });
     }, 100);
+
+    // Base stat total
+    dom.baseStatTotal.textContent = `TOTAL: ${totalStats}`;
+
+    // EV Yield
+    const evs = data.stats
+        .filter(s => s.effort > 0)
+        .map(s => `${s.effort} ${statMap[s.stat.name]?.label || ''}`)
+        .join(', ');
+    dom.evYield.textContent = evs ? `EV YIELD: ${evs}` : 'EV YIELD: NONE';
 }

@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Pokédex</title>
+    <title>Retro Pokédex - Ultimate Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="pokedex.css">
 </head>
 <body>
+    <div class="background-particles"></div>
+    
     <div class="pokedex-device">
         <!-- Hinge -->
         <div class="hinge">
+            <div class="hinge-joint"></div>
+            <div class="hinge-joint"></div>
             <div class="hinge-joint"></div>
             <div class="hinge-joint"></div>
             <div class="hinge-joint"></div>
@@ -20,7 +24,7 @@
 
         <!-- Top Lights -->
         <div class="top-lights">
-            <div class="big-light" id="power-light"></div>
+            <div class="big-light off" id="power-light"></div>
             <div class="small-lights">
                 <div class="dot red" id="dot-red"></div>
                 <div class="dot yellow" id="dot-yellow"></div>
@@ -30,32 +34,43 @@
 
         <!-- Screen Bezel -->
         <div class="screen-bezel" id="screen-bezel">
-            <div class="screen-container" id="screen-container">
-                <!-- Loading Text -->
-                <div class="loading-text" id="loader">LOADING...</div>
-
-                <!-- Power Off Screen -->
-                <div class="power-off-screen" id="power-off-screen"></div>
-
+            <div class="screen-container powered-off" id="screen-container">
                 <!-- Mega Mode Banner -->
                 <div class="mega-banner" id="mega-banner">
-                    <span class="mega-text">⚡ MEGA MODE ⚡</span>
+                    <div class="mega-text">⚡ MEGA EVOLUTION ACTIVE ⚡</div>
+                </div>
+                
+                <!-- Shiny Star Indicator -->
+                <div class="shiny-indicator" id="shiny-indicator">
+                    <span class="shiny-star">★</span>
+                    <span class="shiny-text">SHINY</span>
+                </div>
+                
+                <!-- Power Off Screen -->
+                <div class="power-off-screen active" id="power-off-screen">
+                    <div class="power-off-text">Press START to power on...</div>
+                    <div class="boot-sequence" id="boot-sequence"></div>
                 </div>
 
+                <!-- Loading -->
+                <div class="loading-text" id="loader" style="display: none;">LOADING...</div>
+
                 <!-- Info View -->
-                <div class="view-info active" id="view-info">
+                <div class="view-info" id="view-info">
                     <div class="data-row">
                         <span id="poke-id">#---</span>
                         <span id="poke-name">-------</span>
                     </div>
                     <div class="sprite-area">
-                        <img id="poke-img" src="" alt="Pokemon Sprite">
+                        <img id="poke-img" src="" alt="">
+                        <div class="sprite-effects" id="sprite-effects"></div>
                     </div>
-                    <div class="data-row">
-                        <span>TYPE:</span>
+                    <div class="type-row">
+                        <span style="font-weight: bold;">TYPE:</span>
                         <span id="poke-types">---</span>
                     </div>
-                    <div class="desc-text" id="poke-desc">Press START to power on...</div>
+                    <div class="desc-text" id="poke-desc"></div>
+                    <div class="generation-badge" id="generation-badge">GEN ?</div>
                 </div>
 
                 <!-- Stats View -->
@@ -66,9 +81,11 @@
                     </div>
                     <div class="abilities-section">
                         <span class="abilities-label">ABILITIES:</span>
-                        <span class="abilities-list" id="poke-abilities">---</span>
+                        <div class="abilities-list" id="poke-abilities">---</div>
                     </div>
-                    <div id="stats-bars"></div>
+                    <div class="stats-bars" id="stats-bars"></div>
+                    <div class="base-stat-total" id="base-stat-total">TOTAL: ---</div>
+                    <div class="ev-yield" id="ev-yield">EV YIELD: ---</div>
                 </div>
             </div>
 
@@ -93,10 +110,10 @@
                     <option value="bug">BUG</option>
                     <option value="normal">NORMAL</option>
                     <option value="poison">POISON</option>
-                    <option value="electric">ELEC</option>
+                    <option value="electric">ELECTRIC</option>
                     <option value="ground">GROUND</option>
                     <option value="fairy">FAIRY</option>
-                    <option value="fighting">FIGHT</option>
+                    <option value="fighting">FIGHTING</option>
                     <option value="psychic">PSYCHIC</option>
                     <option value="rock">ROCK</option>
                     <option value="ghost">GHOST</option>
@@ -106,7 +123,7 @@
                     <option value="steel">STEEL</option>
                     <option value="flying">FLYING</option>
                 </select>
-                <input type="text" class="search-input" id="search-input" placeholder="SEARCH...">
+                <input type="text" class="search-input" id="search-input" placeholder="NAME OR #">
                 <button class="go-btn" id="btn-search">GO</button>
             </div>
 
@@ -114,14 +131,12 @@
             <div class="bottom-controls">
                 <!-- D-Pad -->
                 <div class="d-pad">
-                    <div class="d-pad-h">
-                        <button class="d-btn d-left" id="btn-prev"></button>
-                        <button class="d-btn d-right" id="btn-next"></button>
-                    </div>
-                    <div class="d-pad-v">
-                        <button class="d-btn d-up" id="btn-up"></button>
-                        <button class="d-btn d-down" id="btn-down"></button>
-                    </div>
+                    <div class="d-pad-h"></div>
+                    <div class="d-pad-v"></div>
+                    <button class="d-btn d-left" id="btn-prev"></button>
+                    <button class="d-btn d-right" id="btn-next"></button>
+                    <button class="d-btn d-up" id="btn-up"></button>
+                    <button class="d-btn d-down" id="btn-down"></button>
                 </div>
 
                 <!-- Action Buttons -->
@@ -137,9 +152,10 @@
                 </div>
             </div>
 
-            <!-- Start Button -->
+            <!-- Start/Select Buttons -->
             <div class="start-select-buttons">
                 <button class="small-rect-btn" id="btn-start">START</button>
+                <button class="small-rect-btn" id="btn-select">SELECT</button>
             </div>
         </div>
 
@@ -148,14 +164,13 @@
             <label for="volume-slider">VOL</label>
             <input type="range" id="volume-slider" min="0" max="100" value="50">
         </div>
-    </div>
 
-    <!-- Audio Elements -->
-    <audio id="sound-button" preload="auto"></audio>
-    <audio id="sound-move" preload="auto"></audio>
-    <audio id="sound-select" preload="auto"></audio>
-    <audio id="sound-error" preload="auto"></audio>
-    <audio id="sound-cry" preload="auto"></audio>
+        <!-- Bottom Logo -->
+        <div class="pokedex-logo">
+            <div class="logo-text">POKéDEX</div>
+            <div class="logo-subtitle">ULTIMATE EDITION</div>
+        </div>
+    </div>
 
     <script src="pokedex.js"></script>
 </body>
